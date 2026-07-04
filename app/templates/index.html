@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazardous Waste Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f4f6f8;
+            color: #222;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        h1 {
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #555;
+            margin-bottom: 24px;
+        }
+        form {
+            background: #eef3f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        input[type="file"] {
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 18px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .error {
+            color: #b91c1c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .result-section {
+            margin-top: 30px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 20px;
+        }
+        .image-card {
+            background: #fafafa;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .image-card img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #f3f4f6;
+        }
+        .no-detections {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hazardous Waste Detection</h1>
+        <p class="subtitle">
+            Upload a scrap-yard image to detect hazardous waste objects such as Cylinders and Shock Absorbers.
+        </p>
+
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Run Detection</button>
+        </form>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if result %}
+            <div class="result-section">
+                <h2>Prediction Result</h2>
+
+                <div class="image-grid">
+                    <div class="image-card">
+                        <h3>Uploaded Image</h3>
+                        <img src="{{ uploaded_image_url }}" alt="Uploaded Image">
+                    </div>
+
+                    <div class="image-card">
+                        <h3>Annotated Output</h3>
+                        <img src="{{ output_image_url }}" alt="Prediction Output">
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px;">Detections</h3>
+
+                {% if result.detections and result.detections|length > 0 %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Class</th>
+                                <th>Confidence</th>
+                                <th>Bounding Box (x1, y1, x2, y2)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for det in result.detections %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ det.class_name }}</td>
+                                    <td>{{ det.confidence }}</td>
+                                    <td>{{ det.bbox }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="no-detections">
+                        No detections found for this image.
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
